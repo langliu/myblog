@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from . import models
 
 
@@ -26,5 +26,4 @@ def edit_action(request):
     title = request.POST.get('title', 'TITLE')
     content = request.POST.get('content', 'CONTENT')
     models.Article.objects.create(title=title, content=content)
-    articles = models.Article.objects.all()
-    return render(request, 'blog/index.html', {'articles': articles})
+    return HttpResponseRedirect('/blog/')
