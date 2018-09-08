@@ -1,5 +1,6 @@
 # IntelliJ project files
 .idea
+*.xml
 *.iml
 out
 gen### Node template

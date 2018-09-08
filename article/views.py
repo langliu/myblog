@@ -2,6 +2,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.utils import timezone
 from django.forms.models import model_to_dict
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core import serializers
 from json import loads
 from article.models import Article, ArticleTag, Category, ArticleCategory, Tag
 
@@ -35,4 +37,28 @@ def get_article_by_id(request):
         article_id = request.GET.get('id')
         print(article_id)
         response_data = model_to_dict(Article.objects.get(pk=article_id))
+        category_id = ArticleCategory.objects.get(article=article_id).category
+        category = Category.objects.get(pk=category_id).name
+        print(category)
+        response_data['category'] = category
         return JsonResponse({'code': 200, 'message': '请求成功', 'data': response_data})
+
+
+@csrf_exempt
+def get_article_list(request):
+    if request.method == 'GET':
+        page = request.GET.get('page')
+        page_size = int(request.GET.get('pageSize'))
+        response = {}
+        article_list = Article.objects.all()
+        paginator = Paginator(article_list, page_size)
+        response['total'] = paginator.count
+        try:
+            articles = paginator.page(page)
+        except PageNotAnInteger:
+            articles = paginator.page(1)
+        except EmptyPage:
+            articles = paginator.page(paginator.num_pages)
+        response['articles'] = loads(serializers.serialize("json", articles))
+        print(response)
+        return JsonResponse({'code': 200, 'message': '请求成功', 'data': response})
